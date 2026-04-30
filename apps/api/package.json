@@ -11,6 +11,8 @@
     "bullmq": "^5.4.0",
     "ioredis": "^5.3.2",
     "@prisma/client": "^5.10.2",
+    "ai": "^3.0.0",
+    "@ai-sdk/openai": "^0.0.1",
     "@flowcore/shared": "workspace:*"
   },
   "devDependencies": {

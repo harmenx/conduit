@@ -1,7 +1,10 @@
+import { generateText } from 'ai'
+import { openai } from '@ai-sdk/openai'
 import prisma from './prisma'
 import { workflowQueue } from './queue'
 
 export class WorkflowEngine {
+  // ... (previous execute method)
   async execute(workflowId: string, payload: any) {
     const log = await prisma.executionLog.create({
       data: {
@@ -47,14 +50,21 @@ export class WorkflowEngine {
   }
 
   private async executeStep(step: any, input: any) {
-    // simplified step execution
+    const config = step.config as any
+    
     switch (step.type) {
       case 'log':
         console.log(`[Step ${step.id}]`, input)
         return input
-      case 'llm':
-        // stub for vercel ai sdk integration
-        return { ...input, ai_response: 'LLM Response Stub' }
+
+      case 'llm': {
+        const { text } = await generateText({
+          model: openai('gpt-4-turbo'),
+          prompt: config.prompt.replace(/{{input}}/g, JSON.stringify(input)),
+        })
+        return { ...input, ai_result: text }
+      }
+
       default:
         return input
     }

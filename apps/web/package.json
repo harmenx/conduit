@@ -14,6 +14,7 @@
     "tailwind-merge": "^2.2.1",
     "clsx": "^2.1.0",
     "lucide-react": "^0.331.0",
+    "better-auth": "^0.5.0",
     "@flowcore/shared": "workspace:*"
   },
   "devDependencies": {

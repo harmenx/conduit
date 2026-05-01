@@ -1,10 +1,9 @@
-'use client'
-
 import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, Play, Save, Plus, MessageSquare, Terminal } from 'lucide-react'
 import { useState } from 'react'
 import { useWorkflowStore } from '@/lib/store'
 import { AddStepModal } from '@/components/AddStepModal'
+import { StepConfigPanel } from '@/components/StepConfigPanel'
 import { StepType } from '@flowcore/shared/types'
 
 export default function WorkflowEditor() {
@@ -12,7 +11,7 @@ export default function WorkflowEditor() {
   const router = useRouter()
   const id = params.id as string
   
-  const { steps, addStep } = useWorkflowStore()
+  const { steps, addStep, setSelectedStepId } = useWorkflowStore()
   const [showAddStep, setShowAddStep] = useState(false)
 
   const handleAddStep = (type: StepType) => {
@@ -55,8 +54,10 @@ export default function WorkflowEditor() {
         </div>
       </header>
 
-      {/* canvas area */}
-      <div className="relative flex-1 overflow-auto bg-[radial-gradient(#18181b_1px,transparent_1px)] [background-size:24px_24px]">
+      {/* main editor body */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* canvas area */}
+        <div className="relative flex-1 overflow-auto bg-[radial-gradient(#18181b_1px,transparent_1px)] [background-size:24px_24px]">
         <div className="mx-auto flex w-max flex-col items-center gap-8 py-20">
           {/* trigger node */}
           <div className="group relative flex h-20 w-64 items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900 p-4 shadow-lg hover:border-zinc-700 transition-colors cursor-pointer">
@@ -72,7 +73,10 @@ export default function WorkflowEditor() {
           {steps.map((step, index) => (
             <div key={step.id} className="flex flex-col items-center gap-8 w-full">
               <div className="h-8 w-px bg-zinc-800" />
-              <div className="group relative flex h-20 w-64 items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900 p-4 shadow-lg hover:border-zinc-700 transition-colors cursor-pointer">
+              <div 
+                onClick={() => setSelectedStepId(step.id)}
+                className="group relative flex h-20 w-64 items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900 p-4 shadow-lg hover:border-indigo-500/50 hover:bg-zinc-800/50 transition-all cursor-pointer"
+              >
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-800 text-zinc-400 group-hover:text-zinc-200">
                   {step.type === 'llm' ? <MessageSquare size={18} /> : <Terminal size={18} />}
                 </div>
@@ -92,7 +96,10 @@ export default function WorkflowEditor() {
 
           {/* add step button */}
           <button 
-            onClick={() => setShowAddStep(true)}
+            onClick={() => {
+              setSelectedStepId(null)
+              setShowAddStep(true)
+            }}
             className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 text-zinc-500 hover:bg-zinc-700 hover:text-zinc-300 transition-all shadow-sm border border-zinc-700/50"
           >
             <Plus size={16} />
@@ -100,12 +107,15 @@ export default function WorkflowEditor() {
         </div>
       </div>
 
-      {showAddStep && (
-        <AddStepModal 
-          onClose={() => setShowAddStep(false)} 
-          onSelect={handleAddStep}
-        />
-      )}
+      <StepConfigPanel />
+    </div>
+
+    {showAddStep && (
+      <AddStepModal 
+        onClose={() => setShowAddStep(false)} 
+        onSelect={handleAddStep}
+      />
+    )}
     </div>
   )
 }

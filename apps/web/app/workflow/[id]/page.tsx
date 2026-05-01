@@ -13,6 +13,7 @@ export default function WorkflowEditor() {
   
   const { steps, addStep, setSelectedStepId } = useWorkflowStore()
   const [showAddStep, setShowAddStep] = useState(false)
+  const [isPublishing, setIsPublishing] = useState(false)
 
   const handleAddStep = (type: StepType) => {
     addStep({
@@ -23,6 +24,25 @@ export default function WorkflowEditor() {
       order: steps.length,
     })
     setShowAddStep(false)
+  }
+
+  const handlePublish = async () => {
+    setIsPublishing(true)
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/workflows/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          enabled: true, 
+          steps: steps 
+        }),
+      })
+      if (res.ok) alert('Workflow published!')
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setIsPublishing(false)
+    }
   }
 
   return (
@@ -43,13 +63,17 @@ export default function WorkflowEditor() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 rounded-md border border-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:bg-zinc-800">
+          <button className="flex items-center gap-2 rounded-md border border-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:bg-zinc-800 transition-colors">
             <Play size={14} />
             Test
           </button>
-          <button className="flex items-center gap-2 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-500">
+          <button 
+            onClick={handlePublish}
+            disabled={isPublishing}
+            className="flex items-center gap-2 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-500 disabled:opacity-50 transition-colors"
+          >
             <Save size={14} />
-            Publish
+            {isPublishing ? 'Publishing...' : 'Publish'}
           </button>
         </div>
       </header>

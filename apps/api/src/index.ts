@@ -1,6 +1,7 @@
 import Fastify from 'fastify'
-import './lib/queue' // init worker
+import './lib/queue'
 import prisma from './lib/prisma'
+import { engine } from './lib/engine'
 
 const server = Fastify({
   logger: true
@@ -19,6 +20,20 @@ server.post('/workflows', async (request, reply) => {
     }
   })
   return workflow
+})
+
+server.post('/hooks/:id', async (request, reply) => {
+  const { id } = request.params as { id: string }
+  const workflow = await prisma.workflow.findUnique({ where: { id } })
+  
+  if (!workflow || !workflow.enabled) {
+    return reply.status(404).send({ error: 'Workflow not found or disabled' })
+  }
+
+  // push to engine (should be async via queue in real prod)
+  engine.execute(id, request.body)
+  
+  return { status: 'triggered' }
 })
 
 const start = async () => {

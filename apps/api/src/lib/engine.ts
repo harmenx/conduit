@@ -65,6 +65,18 @@ export class WorkflowEngine {
         return { ...input, ai_result: text }
       }
 
+      case 'condition': {
+        const { field, operator, value } = config
+        const inputValue = input[field]
+        
+        let match = false
+        if (operator === 'equals') match = inputValue === value
+        if (operator === 'contains') match = String(inputValue).includes(value)
+        
+        if (!match) throw new Error(`Condition failed: ${field} ${operator} ${value}`)
+        return input
+      }
+
       default:
         return input
     }

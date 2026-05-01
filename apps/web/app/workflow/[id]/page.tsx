@@ -1,12 +1,9 @@
+'use client'
+
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Play, Save, Plus, MessageSquare, Terminal } from 'lucide-react'
+import { ArrowLeft, Play, Save, Plus, MessageSquare, Terminal, History } from 'lucide-react'
 import { useState } from 'react'
 import { useWorkflowStore } from '@/lib/store'
-import { AddStepModal } from '@/components/AddStepModal'
-import { StepConfigPanel } from '@/components/StepConfigPanel'
-import { StepType } from '@flowcore/shared/types'
-
-export default function WorkflowEditor() {
   const params = useParams()
   const router = useRouter()
   const id = params.id as string
@@ -14,6 +11,7 @@ export default function WorkflowEditor() {
   const { steps, addStep, setSelectedStepId } = useWorkflowStore()
   const [showAddStep, setShowAddStep] = useState(false)
   const [isPublishing, setIsPublishing] = useState(false)
+  const [showLogs, setShowLogs] = useState(false)
 
   const handleAddStep = (type: StepType) => {
     addStep({
@@ -63,6 +61,17 @@ export default function WorkflowEditor() {
         </div>
 
         <div className="flex items-center gap-2">
+          <button 
+            onClick={() => {
+              setShowLogs(!showLogs)
+              setSelectedStepId(null)
+            }}
+            className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${showLogs ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-400 hover:text-zinc-200'}`}
+          >
+            <History size={14} />
+            History
+          </button>
+          <div className="mx-1 h-4 w-px bg-zinc-800" />
           <button className="flex items-center gap-2 rounded-md border border-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:bg-zinc-800 transition-colors">
             <Play size={14} />
             Test
@@ -131,7 +140,7 @@ export default function WorkflowEditor() {
         </div>
       </div>
 
-      <StepConfigPanel />
+      {showLogs ? <ExecutionLogs workflowId={id} /> : <StepConfigPanel />}
     </div>
 
     {showAddStep && (

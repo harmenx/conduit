@@ -53,6 +53,16 @@ server.put('/workflows/:id', async (request, reply) => {
   })
 })
 
+server.get('/workflows/:id/logs', async (request, reply) => {
+  const { id } = request.params as { id: string }
+  const logs = await prisma.executionLog.findMany({
+    where: { workflowId: id },
+    orderBy: { startedAt: 'desc' },
+    take: 50
+  })
+  return logs
+})
+
 server.post('/hooks/:id', async (request, reply) => {
   const { id } = request.params as { id: string }
   const workflow = await prisma.workflow.findUnique({ where: { id } })

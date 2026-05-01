@@ -2,10 +2,14 @@ import Fastify from 'fastify'
 import './lib/queue'
 import prisma from './lib/prisma'
 import { engine } from './lib/engine'
+import { auth } from './lib/auth'
+import { toFastifyHandler } from 'better-auth/fastify'
 
 const server = Fastify({
   logger: true
 })
+
+server.all('/api/auth/*', toFastifyHandler(auth))
 
 server.get('/health', async () => {
   return { status: 'ok', uptime: process.uptime() }

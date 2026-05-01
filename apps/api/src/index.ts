@@ -22,6 +22,37 @@ server.post('/workflows', async (request, reply) => {
   return workflow
 })
 
+server.put('/workflows/:id', async (request, reply) => {
+  const { id } = request.params as { id: string }
+  const { name, enabled, steps } = request.body as { 
+    name?: string, 
+    enabled?: boolean, 
+    steps: any[] 
+  }
+
+  return await prisma.$transaction(async (tx) => {
+    // update workflow
+    const workflow = await tx.workflow.update({
+      where: { id },
+      data: { name, enabled }
+    })
+
+    // sync steps (delete and recreate for simplicity in this draft)
+    await tx.step.deleteMany({ where: { workflowId: id } })
+    await tx.step.createMany({
+      data: steps.map((s, i) => ({
+        id: s.id,
+        workflowId: id,
+        type: s.type,
+        config: s.config,
+        order: i,
+      }))
+    })
+
+    return workflow
+  })
+})
+
 server.post('/hooks/:id', async (request, reply) => {
   const { id } = request.params as { id: string }
   const workflow = await prisma.workflow.findUnique({ where: { id } })

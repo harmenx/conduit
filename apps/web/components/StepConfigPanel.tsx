@@ -37,6 +37,42 @@ export function StepConfigPanel() {
           </div>
         )}
 
+        {step.type === 'condition' && (
+          <div className="space-y-4">
+            <div>
+              <label className="mb-2 block text-xs font-medium text-zinc-500 uppercase tracking-wider">Field Path</label>
+              <input
+                type="text"
+                value={step.config.field || ''}
+                onChange={e => updateStep(step.id, { config: { ...step.config, field: e.target.value } })}
+                className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-300 focus:border-indigo-500 focus:outline-none"
+                placeholder="e.g. user.email"
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-xs font-medium text-zinc-500 uppercase tracking-wider">Operator</label>
+              <select
+                value={step.config.operator || 'equals'}
+                onChange={e => updateStep(step.id, { config: { ...step.config, operator: e.target.value } })}
+                className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-300 focus:border-indigo-500 focus:outline-none"
+              >
+                <option value="equals">Equals</option>
+                <option value="contains">Contains</option>
+              </select>
+            </div>
+            <div>
+              <label className="mb-2 block text-xs font-medium text-zinc-500 uppercase tracking-wider">Value</label>
+              <input
+                type="text"
+                value={step.config.value || ''}
+                onChange={e => updateStep(step.id, { config: { ...step.config, value: e.target.value } })}
+                className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-300 focus:border-indigo-500 focus:outline-none"
+                placeholder="Value to match..."
+              />
+            </div>
+          </div>
+        )}
+
         {step.type === 'action' && (
           <div>
             <p className="text-sm text-zinc-400">This step will log the input data to the execution history for debugging.</p>

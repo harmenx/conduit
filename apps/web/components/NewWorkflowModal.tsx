@@ -2,11 +2,13 @@
 
 import { useState } from 'react'
 import { X } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useWorkflowStore } from '@/lib/store'
 
 export function NewWorkflowModal({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
+  const router = useRouter()
   const addWorkflow = useWorkflowStore(state => state.addWorkflow)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -15,17 +17,19 @@ export function NewWorkflowModal({ onClose }: { onClose: () => void }) {
 
     setLoading(true)
     try {
-      // simulate api call for now
-      const mockWorkflow = {
-        id: Math.random().toString(36).substr(2, 9),
-        name,
-        enabled: false,
-        triggerId: 'default',
-        createdAt: new Date(),
-        updatedAt: new Date(),
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/workflows`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      })
+      
+      if (res.ok) {
+        const workflow = await res.json()
+        addWorkflow(workflow)
+        router.push(`/workflow/${workflow.id}`)
       }
-      addWorkflow(mockWorkflow)
-      onClose()
+    } catch (err) {
+      console.error(err)
     } finally {
       setLoading(false)
     }

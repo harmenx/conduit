@@ -13,6 +13,7 @@ interface WorkflowState {
   addStep: (step: Step) => void
   setSelectedStepId: (id: string | null) => void
   updateStep: (id: string, updates: Partial<Step>) => void
+  deleteStep: (id: string) => void
 }
 
 export const useWorkflowStore = create<WorkflowState>((set) => ({
@@ -32,5 +33,9 @@ export const useWorkflowStore = create<WorkflowState>((set) => ({
   setSelectedStepId: (id) => set({ selectedStepId: id }),
   updateStep: (id, updates) => set((state) => ({
     steps: state.steps.map(s => s.id === id ? { ...s, ...updates } : s)
+  })),
+  deleteStep: (id) => set((state) => ({
+    steps: state.steps.filter(s => s.id !== id),
+    selectedStepId: state.selectedStepId === id ? null : state.selectedStepId
   })),
 }))

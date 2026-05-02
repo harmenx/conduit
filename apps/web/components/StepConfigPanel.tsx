@@ -4,7 +4,7 @@ import { X } from 'lucide-react'
 import { useWorkflowStore } from '@/lib/store'
 
 export function StepConfigPanel() {
-  const { steps, selectedStepId, setSelectedStepId, updateStep } = useWorkflowStore()
+  const { steps, selectedStepId, setSelectedStepId, updateStep, deleteStep } = useWorkflowStore()
   const step = steps.find(s => s.id === selectedStepId)
 
   if (!step) return null
@@ -89,9 +89,7 @@ export function StepConfigPanel() {
 
       <div className="mt-auto">
         <button 
-          onClick={() => {
-            // todo: implement delete
-          }}
+          onClick={() => deleteStep(step.id)}
           className="w-full rounded-md border border-red-900/50 px-4 py-2 text-xs font-medium text-red-500 hover:bg-red-500/10 transition-colors"
         >
           Delete Step

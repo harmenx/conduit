@@ -15,6 +15,7 @@ interface WorkflowState {
   setSelectedStepId: (id: string | null) => void
   updateStep: (id: string, updates: Partial<Step>) => void
   deleteStep: (id: string) => void
+  moveStep: (id: string, direction: 'up' | 'down') => void
 }
 
 export const useWorkflowStore = create<WorkflowState>((set) => ({
@@ -42,4 +43,19 @@ export const useWorkflowStore = create<WorkflowState>((set) => ({
     steps: state.steps.filter(s => s.id !== id),
     selectedStepId: state.selectedStepId === id ? null : state.selectedStepId
   })),
+  moveStep: (id, direction) => set((state) => {
+    const index = state.steps.findIndex(s => s.id === id)
+    if (index === -1) return state
+    if (direction === 'up' && index === 0) return state
+    if (direction === 'down' && index === state.steps.length - 1) return state
+
+    const newSteps = [...state.steps]
+    const targetIndex = direction === 'up' ? index - 1 : index + 1
+    const [moved] = newSteps.splice(index, 1)
+    newSteps.splice(targetIndex, 0, moved)
+
+    return {
+      steps: newSteps.map((s, i) => ({ ...s, order: i }))
+    }
+  }),
 }))

@@ -1,7 +1,7 @@
 'use client'
 
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Play, Save, Plus, MessageSquare, Terminal, History, ChevronUp, ChevronDown } from 'lucide-react'
+import { ArrowLeft, Play, Save, Plus, MessageSquare, Terminal, History, ChevronUp, ChevronDown, Zap } from 'lucide-react'
 import { useState } from 'react'
 import { useWorkflowStore } from '@/lib/store'
 import { AddStepModal } from '@/components/AddStepModal'
@@ -101,11 +101,12 @@ export default function WorkflowEditor() {
           {/* trigger node */}
           <div className="group relative flex h-20 w-64 items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900 p-4 shadow-lg hover:border-zinc-700 transition-colors cursor-pointer">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400">
-              <Plus size={18} />
+              <Zap size={18} />
             </div>
-            <div>
+            <div className="flex-1 min-w-0">
               <p className="text-[10px] font-bold uppercase text-indigo-400">Trigger</p>
-              <p className="text-sm font-medium text-zinc-200">Webhook Listener</p>
+              <p className="text-sm font-medium text-zinc-200 truncate">Webhook Listener</p>
+              <p className="text-[10px] font-mono text-zinc-500 truncate mt-0.5">/hooks/{id}</p>
             </div>
           </div>
 

@@ -26,6 +26,16 @@ server.post('/workflows', async (request, reply) => {
   return workflow
 })
 
+server.get('/workflows/:id', async (request, reply) => {
+  const { id } = request.params as { id: string }
+  const workflow = await prisma.workflow.findUnique({
+    where: { id },
+    include: { steps: { orderBy: { order: 'asc' } } }
+  })
+  if (!workflow) return reply.status(404).send({ error: 'Not found' })
+  return workflow
+})
+
 server.put('/workflows/:id', async (request, reply) => {
   const { id } = request.params as { id: string }
   const { name, enabled, steps } = request.body as { 

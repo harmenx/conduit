@@ -77,6 +77,12 @@ server.get('/workflows/:id/logs', async (request, reply) => {
   return logs
 })
 
+server.delete('/workflows/:id', async (request, reply) => {
+  const { id } = request.params as { id: string }
+  await prisma.workflow.delete({ where: { id } })
+  return { status: 'deleted' }
+})
+
 server.post('/hooks/:id', async (request, reply) => {
   const { id } = request.params as { id: string }
   const workflow = await prisma.workflow.findUnique({ where: { id } })

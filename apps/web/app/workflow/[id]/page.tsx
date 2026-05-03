@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, Play, Save, Plus, MessageSquare, Terminal, History, ChevronUp, ChevronDown, Zap } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useWorkflowStore } from '@/lib/store'
 import { AddStepModal } from '@/components/AddStepModal'
 import { StepConfigPanel } from '@/components/StepConfigPanel'
@@ -14,10 +14,24 @@ export default function WorkflowEditor() {
   const router = useRouter()
   const id = params.id as string
   
-  const { steps, addStep, setSelectedStepId, moveStep } = useWorkflowStore()
+  const { steps, setSteps, setCurrentWorkflow, currentWorkflow, addStep, setSelectedStepId, moveStep } = useWorkflowStore()
   const [showAddStep, setShowAddStep] = useState(false)
   const [isPublishing, setIsPublishing] = useState(false)
   const [showLogs, setShowLogs] = useState(false)
+
+  useEffect(() => {
+    async function fetchWorkflow() {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/workflows/${id}`)
+        const data = await res.json()
+        setCurrentWorkflow(data)
+        setSteps(data.steps || [])
+      } catch (err) {
+        console.error(err)
+      }
+    }
+    fetchWorkflow()
+  }, [id, setCurrentWorkflow, setSteps])
 
   const handleAddStep = (type: StepType) => {
     addStep({
@@ -61,8 +75,8 @@ export default function WorkflowEditor() {
             <ArrowLeft size={18} />
           </button>
           <div>
-            <h1 className="text-sm font-semibold text-zinc-200">Untitled Workflow</h1>
-            <p className="text-[10px] uppercase tracking-wider text-zinc-500">Draft</p>
+            <h1 className="text-sm font-semibold text-zinc-200">{currentWorkflow?.name || 'Untitled Workflow'}</h1>
+            <p className="text-[10px] uppercase tracking-wider text-zinc-500">{currentWorkflow?.enabled ? 'Active' : 'Draft'}</p>
           </div>
         </div>
 

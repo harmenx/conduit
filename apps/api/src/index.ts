@@ -15,6 +15,12 @@ server.get('/health', async () => {
   return { status: 'ok', uptime: process.uptime() }
 })
 
+server.get('/workflows', async () => {
+  return await prisma.workflow.findMany({
+    orderBy: { updatedAt: 'desc' }
+  })
+})
+
 server.post('/workflows', async (request, reply) => {
   const { name } = request.body as { name: string }
   const workflow = await prisma.workflow.create({

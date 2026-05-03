@@ -3,19 +3,24 @@
 import { useEffect, useState } from 'react'
 import { useWorkflowStore } from '@/lib/store'
 import { NewWorkflowModal } from '@/components/NewWorkflowModal'
-import { Plus, ChevronRight } from 'lucide-react'
+import { Plus, ChevronRight, Trash2 } from 'lucide-react'
 
 export default function Dashboard() {
-  const { workflows, setWorkflows, updateWorkflow } = useWorkflowStore()
+  const { workflows, setWorkflows, updateWorkflow, removeWorkflow } = useWorkflowStore()
   const [showModal, setShowModal] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
-    // todo: fetch from api
-    setWorkflows([
-      { id: '1', name: 'Welcome Email Flow', enabled: true, triggerId: 't1', createdAt: new Date(), updatedAt: new Date() },
-      { id: '2', name: 'Slack Notification', enabled: false, triggerId: 't2', createdAt: new Date(), updatedAt: new Date() },
-    ])
+    async function fetchWorkflows() {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/workflows`)
+        const data = await res.json()
+        setWorkflows(data)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+    fetchWorkflows()
   }, [setWorkflows])
 
   const toggleWorkflow = async (e: React.MouseEvent, id: string, enabled: boolean) => {
@@ -27,6 +32,20 @@ export default function Dashboard() {
         body: JSON.stringify({ enabled: !enabled, steps: [] }),
       })
       updateWorkflow(id, { enabled: !enabled })
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const handleDeleteWorkflow = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation()
+    if (!confirm('Are you sure you want to delete this workflow?')) return
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/workflows/${id}`, {
+        method: 'DELETE',
+      })
+      if (res.ok) removeWorkflow(id)
     } catch (err) {
       console.error(err)
     }
@@ -65,11 +84,19 @@ export default function Dashboard() {
                 </button>
                 <div>
                   <h3 className="font-medium text-zinc-200 group-hover:text-white transition-colors">{w.name}</h3>
-                  <p className="text-xs text-zinc-500">Last updated {w.updatedAt.toLocaleDateString()}</p>
+                  <p className="text-xs text-zinc-500">Last updated {new Date(w.updatedAt).toLocaleDateString()}</p>
                 </div>
               </div>
-              <div className="text-zinc-400 group-hover:text-zinc-200 transition-colors">
-                <ChevronRight size={20} />
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={(e) => handleDeleteWorkflow(e, w.id)}
+                  className="rounded-md p-2 text-zinc-600 hover:bg-red-500/10 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
+                >
+                  <Trash2 size={16} />
+                </button>
+                <div className="text-zinc-400 group-hover:text-zinc-200 transition-colors">
+                  <ChevronRight size={20} />
+                </div>
               </div>
             </div>
           ))

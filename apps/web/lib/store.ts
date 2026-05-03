@@ -9,6 +9,7 @@ interface WorkflowState {
   setWorkflows: (workflows: Workflow[]) => void
   addWorkflow: (workflow: Workflow) => void
   updateWorkflow: (id: string, updates: Partial<Workflow>) => void
+  removeWorkflow: (id: string) => void
   setCurrentWorkflow: (workflow: Workflow | null) => void
   setSteps: (steps: Step[]) => void
   addStep: (step: Step) => void
@@ -29,6 +30,9 @@ export const useWorkflowStore = create<WorkflowState>((set) => ({
   })),
   updateWorkflow: (id, updates) => set((state) => ({
     workflows: state.workflows.map(w => w.id === id ? { ...w, ...updates } : w)
+  })),
+  removeWorkflow: (id) => set((state) => ({
+    workflows: state.workflows.filter(w => w.id !== id)
   })),
   setCurrentWorkflow: (workflow) => set({ currentWorkflow: workflow }),
   setSteps: (steps) => set({ steps }),

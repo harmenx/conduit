@@ -1,12 +1,13 @@
 'use client'
 
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Play, Save, Plus, MessageSquare, Terminal, History, ChevronUp, ChevronDown, Zap } from 'lucide-react'
+import { ArrowLeft, Play, Save, Plus, History, Zap } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useWorkflowStore } from '@/lib/store'
 import { AddStepModal } from '@/components/AddStepModal'
 import { StepConfigPanel } from '@/components/StepConfigPanel'
 import { ExecutionLogs } from '@/components/ExecutionLogs'
+import { StepNode } from '@/components/StepNode'
 import { StepType } from '@flowcore/shared/types'
 
 export default function WorkflowEditor() {
@@ -125,43 +126,15 @@ export default function WorkflowEditor() {
           </div>
 
           {steps.map((step, index) => (
-            <div key={step.id} className="flex flex-col items-center gap-8 w-full">
-              <div className="h-8 w-px bg-zinc-800" />
-              <div 
-                onClick={() => setSelectedStepId(step.id)}
-                className="group relative flex h-20 w-64 items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900 p-4 shadow-lg hover:border-indigo-500/50 hover:bg-zinc-800/50 transition-all cursor-pointer"
-              >
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-800 text-zinc-400 group-hover:text-zinc-200">
-                  {step.type === 'llm' ? <MessageSquare size={18} /> : <Terminal size={18} />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-bold uppercase text-zinc-500">
-                    {step.type === 'llm' ? 'AI Step' : 'Action'}
-                  </p>
-                  <p className="text-sm font-medium text-zinc-200 truncate pr-4">
-                    {step.type === 'llm' ? 'GPT-4 Generator' : 'Log Output'}
-                  </p>
-                </div>
-
-                {/* move controls */}
-                <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); moveStep(step.id, 'up') }}
-                    disabled={index === 0}
-                    className="p-1 text-zinc-500 hover:text-zinc-200 disabled:opacity-0"
-                  >
-                    <ChevronUp size={14} />
-                  </button>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); moveStep(step.id, 'down') }}
-                    disabled={index === steps.length - 1}
-                    className="p-1 text-zinc-500 hover:text-zinc-200 disabled:opacity-0"
-                  >
-                    <ChevronDown size={14} />
-                  </button>
-                </div>
-              </div>
-            </div>
+            <StepNode
+              key={step.id}
+              step={step}
+              index={index}
+              totalSteps={steps.length}
+              isSelected={selectedStepId === step.id}
+              onClick={() => setSelectedStepId(step.id)}
+              onMove={moveStep}
+            />
           ))}
 
           <div className="h-8 w-px bg-zinc-800" />

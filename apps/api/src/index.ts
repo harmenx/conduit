@@ -89,6 +89,15 @@ server.delete('/workflows/:id', async (request, reply) => {
   return { status: 'deleted' }
 })
 
+server.post('/workflows/:id/test', async (request, reply) => {
+  const { id } = request.params as { id: string }
+  const { payload } = request.body as { payload: any }
+  
+  // ignore enabled check for tests
+  engine.execute(id, payload)
+  return { status: 'test_triggered' }
+})
+
 server.post('/hooks/:id', async (request, reply) => {
   const { id } = request.params as { id: string }
   const workflow = await prisma.workflow.findUnique({ where: { id } })

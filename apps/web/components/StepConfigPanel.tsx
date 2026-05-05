@@ -72,6 +72,23 @@ export function StepConfigPanel() {
             </div>
           </div>
         )}
+        
+        {step.type === 'wait' && (
+          <div>
+            <label className="mb-2 block text-xs font-medium text-zinc-500 uppercase tracking-wider">Delay (Seconds)</label>
+            <input
+              type="number"
+              value={step.config.seconds || 5}
+              onChange={e => updateStep(step.id, { config: { ...step.config, seconds: parseInt(e.target.value) } })}
+              className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-300 focus:border-indigo-500 focus:outline-none"
+              min="1"
+              max="60"
+            />
+            <p className="mt-2 text-[10px] text-zinc-500 italic">
+              Pauses the workflow for the specified number of seconds.
+            </p>
+          </div>
+        )}
 
         {step.type === 'action' && (
           <div>

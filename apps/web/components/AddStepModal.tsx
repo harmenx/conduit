@@ -1,12 +1,13 @@
 'use client'
 
-import { X, MessageSquare, Terminal, Zap } from 'lucide-react'
+import { X, MessageSquare, Terminal, Zap, Clock } from 'lucide-react'
 import { StepType } from '@flowcore/shared/types'
 
 const STEP_TYPES: { type: StepType; name: string; icon: any; desc: string }[] = [
   { type: 'llm', name: 'AI Generation', icon: MessageSquare, desc: 'Process data with GPT-4' },
   { type: 'action', name: 'Log Output', icon: Terminal, desc: 'Print data to execution logs' },
   { type: 'condition', name: 'Filter', icon: Zap, desc: 'Continue if condition matches' },
+  { type: 'wait', name: 'Delay', icon: Clock, desc: 'Pause execution for specified time' },
 ]
 
 export function AddStepModal({ onClose, onSelect }: { onClose: () => void; onSelect: (type: StepType) => void }) {

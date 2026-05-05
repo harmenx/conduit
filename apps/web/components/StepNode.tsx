@@ -1,6 +1,6 @@
 'use client'
 
-import { MessageSquare, Terminal, ChevronUp, ChevronDown, Zap } from 'lucide-react'
+import { MessageSquare, Terminal, ChevronUp, ChevronDown, Zap, Clock } from 'lucide-react'
 import { Step } from '@flowcore/shared/types'
 
 interface StepNodeProps {
@@ -16,6 +16,7 @@ export function StepNode({ step, index, totalSteps, isSelected, onClick, onMove 
   const getStepDescription = () => {
     if (step.type === 'llm') return step.config.prompt || 'No prompt set'
     if (step.type === 'condition') return `${step.config.field} ${step.config.operator} ${step.config.value}`
+    if (step.type === 'wait') return `Wait for ${step.config.seconds || 5} seconds`
     return 'Logs input to console'
   }
 
@@ -34,11 +35,12 @@ export function StepNode({ step, index, totalSteps, isSelected, onClick, onMove 
           {step.type === 'llm' && <MessageSquare size={18} />}
           {step.type === 'action' && <Terminal size={18} />}
           {step.type === 'condition' && <Zap size={18} />}
+          {step.type === 'wait' && <Clock size={18} />}
         </div>
         
         <div className="flex-1 min-w-0">
           <p className="text-[10px] font-bold uppercase text-zinc-500">
-            {step.type === 'llm' ? 'AI Generator' : step.type === 'condition' ? 'Condition' : 'Logger'}
+            {step.type === 'llm' ? 'AI Generator' : step.type === 'condition' ? 'Condition' : step.type === 'wait' ? 'Delay' : 'Logger'}
           </p>
           <p className="text-sm font-medium text-zinc-200 truncate pr-4">
             {getStepDescription()}

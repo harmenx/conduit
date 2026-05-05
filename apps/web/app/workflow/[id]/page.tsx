@@ -8,6 +8,7 @@ import { AddStepModal } from '@/components/AddStepModal'
 import { StepConfigPanel } from '@/components/StepConfigPanel'
 import { ExecutionLogs } from '@/components/ExecutionLogs'
 import { StepNode } from '@/components/StepNode'
+import { TestWorkflowModal } from '@/components/TestWorkflowModal'
 import { StepType } from '@flowcore/shared/types'
 
 export default function WorkflowEditor() {
@@ -15,10 +16,21 @@ export default function WorkflowEditor() {
   const router = useRouter()
   const id = params.id as string
   
-  const { steps, setSteps, setCurrentWorkflow, currentWorkflow, addStep, setSelectedStepId, moveStep } = useWorkflowStore()
+  const { 
+    steps, 
+    setSteps, 
+    setCurrentWorkflow, 
+    currentWorkflow, 
+    addStep, 
+    setSelectedStepId, 
+    selectedStepId,
+    moveStep 
+  } = useWorkflowStore()
+  
   const [showAddStep, setShowAddStep] = useState(false)
   const [isPublishing, setIsPublishing] = useState(false)
   const [showLogs, setShowLogs] = useState(false)
+  const [showTest, setShowTest] = useState(false)
 
   useEffect(() => {
     async function fetchWorkflow() {
@@ -39,7 +51,11 @@ export default function WorkflowEditor() {
       id: Math.random().toString(36).substr(2, 9),
       workflowId: id,
       type,
-      config: type === 'llm' ? { prompt: 'Translate this to French: {{input}}' } : {},
+      config: type === 'llm' 
+        ? { prompt: 'Translate this to French: {{input}}' } 
+        : type === 'wait' 
+        ? { seconds: 5 } 
+        : {},
       order: steps.length,
     })
     setShowAddStep(false)
@@ -93,7 +109,10 @@ export default function WorkflowEditor() {
             History
           </button>
           <div className="mx-1 h-4 w-px bg-zinc-800" />
-          <button className="flex items-center gap-2 rounded-md border border-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:bg-zinc-800 transition-colors">
+          <button 
+            onClick={() => setShowTest(true)}
+            className="flex items-center gap-2 rounded-md border border-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:bg-zinc-800 transition-colors"
+          >
             <Play size={14} />
             Test
           </button>
@@ -112,55 +131,62 @@ export default function WorkflowEditor() {
       <div className="flex flex-1 overflow-hidden">
         {/* canvas area */}
         <div className="relative flex-1 overflow-auto bg-[radial-gradient(#18181b_1px,transparent_1px)] [background-size:24px_24px]">
-        <div className="mx-auto flex w-max flex-col items-center gap-8 py-20">
-          {/* trigger node */}
-          <div className="group relative flex h-20 w-64 items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900 p-4 shadow-lg hover:border-zinc-700 transition-colors cursor-pointer">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400">
-              <Zap size={18} />
+          <div className="mx-auto flex w-max flex-col items-center gap-8 py-20">
+            {/* trigger node */}
+            <div className="group relative flex h-20 w-64 items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900 p-4 shadow-lg hover:border-zinc-700 transition-colors cursor-pointer">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400">
+                <Zap size={18} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-bold uppercase text-indigo-400">Trigger</p>
+                <p className="text-sm font-medium text-zinc-200 truncate">Webhook Listener</p>
+                <p className="text-[10px] font-mono text-zinc-500 truncate mt-0.5">/hooks/{id}</p>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-bold uppercase text-indigo-400">Trigger</p>
-              <p className="text-sm font-medium text-zinc-200 truncate">Webhook Listener</p>
-              <p className="text-[10px] font-mono text-zinc-500 truncate mt-0.5">/hooks/{id}</p>
-            </div>
+
+            {steps.map((step, index) => (
+              <StepNode
+                key={step.id}
+                step={step}
+                index={index}
+                totalSteps={steps.length}
+                isSelected={selectedStepId === step.id}
+                onClick={() => setSelectedStepId(step.id)}
+                onMove={moveStep}
+              />
+            ))}
+
+            <div className="h-8 w-px bg-zinc-800" />
+
+            {/* add step button */}
+            <button 
+              onClick={() => {
+                setSelectedStepId(null)
+                setShowAddStep(true)
+              }}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 text-zinc-500 hover:bg-zinc-700 hover:text-zinc-300 transition-all shadow-sm border border-zinc-700/50"
+            >
+              <Plus size={16} />
+            </button>
           </div>
-
-          {steps.map((step, index) => (
-            <StepNode
-              key={step.id}
-              step={step}
-              index={index}
-              totalSteps={steps.length}
-              isSelected={selectedStepId === step.id}
-              onClick={() => setSelectedStepId(step.id)}
-              onMove={moveStep}
-            />
-          ))}
-
-          <div className="h-8 w-px bg-zinc-800" />
-
-          {/* add step button */}
-          <button 
-            onClick={() => {
-              setSelectedStepId(null)
-              setShowAddStep(true)
-            }}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 text-zinc-500 hover:bg-zinc-700 hover:text-zinc-300 transition-all shadow-sm border border-zinc-700/50"
-          >
-            <Plus size={16} />
-          </button>
         </div>
+
+        {showLogs ? <ExecutionLogs workflowId={id} /> : <StepConfigPanel />}
       </div>
 
-      {showLogs ? <ExecutionLogs workflowId={id} /> : <StepConfigPanel />}
-    </div>
-
-    {showAddStep && (
-      <AddStepModal 
-        onClose={() => setShowAddStep(false)} 
-        onSelect={handleAddStep}
-      />
-    )}
+      {showAddStep && (
+        <AddStepModal 
+          onClose={() => setShowAddStep(false)} 
+          onSelect={handleAddStep}
+        />
+      )}
+      
+      {showTest && (
+        <TestWorkflowModal 
+          workflowId={id} 
+          onClose={() => setShowTest(false)} 
+        />
+      )}
     </div>
   )
 }

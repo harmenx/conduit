@@ -58,6 +58,7 @@ export function StepConfigPanel() {
               >
                 <option value="equals">Equals</option>
                 <option value="contains">Contains</option>
+                <option value="exists">Exists</option>
               </select>
             </div>
             <div>

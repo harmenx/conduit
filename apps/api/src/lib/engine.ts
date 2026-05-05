@@ -67,13 +67,29 @@ export class WorkflowEngine {
 
       case 'condition': {
         const { field, operator, value } = config
-        const inputValue = input[field]
+        // Support nested fields (e.g. "user.email")
+        const getValue = (obj: any, path: string) => {
+          return path.split('.').reduce((o, i) => (o ? o[i] : undefined), obj)
+        }
+        
+        const inputValue = getValue(input, field)
         
         let match = false
-        if (operator === 'equals') match = inputValue === value
-        if (operator === 'contains') match = String(inputValue).includes(value)
+        if (operator === 'equals') match = String(inputValue) === String(value)
+        if (operator === 'contains') match = String(inputValue).includes(String(value))
+        if (operator === 'exists') match = inputValue !== undefined && inputValue !== null
         
-        if (!match) throw new Error(`Condition failed: ${field} ${operator} ${value}`)
+        if (!match) {
+          console.log(`Condition failed: ${field} (${inputValue}) ${operator} ${value}`)
+          throw new Error(`Condition not met: ${field} ${operator} ${value}`)
+        }
+        return input
+      }
+
+      case 'wait': {
+        const seconds = parseInt(config.seconds || '5')
+        console.log(`Waiting for ${seconds} seconds...`)
+        await new Promise(resolve => setTimeout(resolve, seconds * 1000))
         return input
       }
 

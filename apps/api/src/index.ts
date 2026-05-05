@@ -1,5 +1,5 @@
 import Fastify from 'fastify'
-import './lib/queue'
+import { workflowQueue } from './lib/queue'
 import prisma from './lib/prisma'
 import { engine } from './lib/engine'
 import { auth } from './lib/auth'
@@ -94,7 +94,7 @@ server.post('/workflows/:id/test', async (request, reply) => {
   const { payload } = request.body as { payload: any }
   
   // ignore enabled check for tests
-  engine.execute(id, payload)
+  await workflowQueue.add('test-execution', { workflowId: id, payload })
   return { status: 'test_triggered' }
 })
 
@@ -106,8 +106,7 @@ server.post('/hooks/:id', async (request, reply) => {
     return reply.status(404).send({ error: 'Workflow not found or disabled' })
   }
 
-  // push to engine (should be async via queue in real prod)
-  engine.execute(id, request.body)
+  await workflowQueue.add('hook-execution', { workflowId: id, payload: request.body })
   
   return { status: 'triggered' }
 })

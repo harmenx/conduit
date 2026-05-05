@@ -1,4 +1,4 @@
-export type StepType = 'trigger' | 'action' | 'condition' | 'llm';
+export type StepType = 'trigger' | 'action' | 'condition' | 'llm' | 'wait';
 
 export interface Workflow {
   id: string;

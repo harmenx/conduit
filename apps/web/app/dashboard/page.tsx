@@ -107,7 +107,14 @@ export default function Dashboard() {
                   <div className={`h-3 w-3 rounded-full transition-all ${w.enabled ? 'translate-x-4 bg-emerald-500' : 'bg-zinc-500'}`} />
                 </button>
                 <div>
-                  <h3 className="font-medium text-zinc-200 group-hover:text-white transition-colors">{w.name}</h3>
+                  <h3 className="font-medium text-zinc-200 group-hover:text-white transition-colors flex items-center gap-2">
+                    {w.name}
+                    {w.logs?.[0] && (
+                      <div className={`h-1.5 w-1.5 rounded-full ${
+                        w.logs[0].status === 'success' ? 'bg-emerald-500' : 'bg-red-500'
+                      }`} />
+                    )}
+                  </h3>
                   <div className="flex items-center gap-3 mt-0.5">
                     <p className="text-xs text-zinc-500">Last updated {new Date(w.updatedAt).toLocaleDateString()}</p>
                     {w.trigger?.type === 'webhook' && (

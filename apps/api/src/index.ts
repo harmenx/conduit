@@ -17,7 +17,13 @@ server.get('/health', async () => {
 
 server.get('/workflows', async () => {
   return await prisma.workflow.findMany({
-    orderBy: { updatedAt: 'desc' }
+    orderBy: { updatedAt: 'desc' },
+    include: {
+      logs: {
+        orderBy: { startedAt: 'desc' },
+        take: 1
+      }
+    }
   })
 })
 

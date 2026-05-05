@@ -105,6 +105,18 @@ export class WorkflowEngine {
         return input
       }
 
+      case 'webhook': {
+        const { url, method = 'POST' } = config
+        console.log(`Making ${method} request to ${url}...`)
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(input)
+        })
+        const data = await response.json()
+        return { ...input, webhook_result: data }
+      }
+
       default:
         return input
     }

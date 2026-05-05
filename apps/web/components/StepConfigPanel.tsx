@@ -91,7 +91,35 @@ export function StepConfigPanel() {
           </div>
         )}
 
-        {step.type === 'action' && (
+        {step.type === 'webhook' && (
+          <div className="space-y-4">
+            <div>
+              <label className="mb-2 block text-xs font-medium text-zinc-500 uppercase tracking-wider">Target URL</label>
+              <input
+                type="text"
+                value={step.config.url || ''}
+                onChange={e => updateStep(step.id, { config: { ...step.config, url: e.target.value } })}
+                className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-300 focus:border-indigo-500 focus:outline-none"
+                placeholder="https://api.example.com/endpoint"
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-xs font-medium text-zinc-500 uppercase tracking-wider">Method</label>
+              <select
+                value={step.config.method || 'POST'}
+                onChange={e => updateStep(step.id, { config: { ...step.config, method: e.target.value } })}
+                className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-300 focus:border-indigo-500 focus:outline-none"
+              >
+                <option value="POST">POST</option>
+                <option value="GET">GET</option>
+                <option value="PUT">PUT</option>
+              </select>
+            </div>
+            <p className="mt-2 text-[10px] text-zinc-500 italic">
+              Sends the current workflow data as a JSON payload to the target URL.
+            </p>
+          </div>
+        )}
           <div>
             <p className="text-sm text-zinc-400">This step will log the input data to the execution history for debugging.</p>
           </div>

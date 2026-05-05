@@ -36,14 +36,30 @@ server.get('/stats', async () => {
 })
 
 server.post('/workflows', async (request, reply) => {
-  const { name } = request.body as { name: string }
-  const workflow = await prisma.workflow.create({
-    data: {
-      name,
-      trigger: {},
+  const { name, trigger, steps } = request.body as { name: string, trigger?: any, steps?: any[] }
+  
+  return await prisma.$transaction(async (tx) => {
+    const workflow = await tx.workflow.create({
+      data: {
+        name,
+        trigger: trigger || {},
+      }
+    })
+
+    if (steps && steps.length > 0) {
+      await tx.step.createMany({
+        data: steps.map((s, i) => ({
+          id: s.id,
+          workflowId: workflow.id,
+          type: s.type,
+          config: s.config,
+          order: i,
+        }))
+      })
     }
+
+    return workflow
   })
-  return workflow
 })
 
 server.get('/workflows/:id', async (request, reply) => {

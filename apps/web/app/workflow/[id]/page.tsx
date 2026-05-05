@@ -1,7 +1,7 @@
 'use client'
 
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Play, Save, Plus, History, Zap } from 'lucide-react'
+import { ArrowLeft, Play, Save, Plus, History, Zap, Download } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useWorkflowStore } from '@/lib/store'
 import { AddStepModal } from '@/components/AddStepModal'
@@ -111,6 +111,25 @@ export default function WorkflowEditor() {
           >
             <History size={14} />
             History
+          </button>
+          <button 
+            onClick={() => {
+              const data = {
+                name: currentWorkflow?.name,
+                trigger: currentWorkflow?.trigger,
+                steps: steps
+              }
+              const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement('a')
+              a.href = url
+              a.download = `${currentWorkflow?.name || 'workflow'}.json`
+              a.click()
+            }}
+            className="flex items-center gap-2 rounded-md border border-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+          >
+            <Download size={14} />
+            Export
           </button>
           <div className="mx-1 h-4 w-px bg-zinc-800" />
           <button 

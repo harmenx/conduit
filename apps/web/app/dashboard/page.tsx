@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useWorkflowStore } from '@/lib/store'
 import { NewWorkflowModal } from '@/components/NewWorkflowModal'
 import { Plus, ChevronRight, Trash2 } from 'lucide-react'
@@ -8,19 +9,25 @@ import { Plus, ChevronRight, Trash2 } from 'lucide-react'
 export default function Dashboard() {
   const { workflows, setWorkflows, updateWorkflow, removeWorkflow } = useWorkflowStore()
   const [showModal, setShowModal] = useState(false)
+  const [stats, setStats] = useState({ workflowCount: 0, executionCount: 0, successRate: 0 })
   const router = useRouter()
 
   useEffect(() => {
-    async function fetchWorkflows() {
+    async function fetchData() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/workflows`)
-        const data = await res.json()
-        setWorkflows(data)
+        const [wRes, sRes] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/workflows`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/stats`)
+        ])
+        const wData = await wRes.json()
+        const sData = await sRes.json()
+        setWorkflows(wData)
+        setStats(sData)
       } catch (err) {
         console.error(err)
       }
     }
-    fetchWorkflows()
+    fetchData()
   }, [setWorkflows])
 
   const toggleWorkflow = async (e: React.MouseEvent, id: string, enabled: boolean) => {
@@ -52,22 +59,39 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="p-8">
-      <header className="mb-8 flex items-center justify-between">
+    <div className="p-8 max-w-7xl mx-auto">
+      <header className="mb-12 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-100">Workflows</h1>
-          <p className="text-sm text-zinc-500">Manage and monitor your automations</p>
+          <h1 className="text-3xl font-bold text-zinc-100 tracking-tight">Dashboard</h1>
+          <p className="text-sm text-zinc-500 mt-1">Manage and monitor your automation pipelines</p>
         </div>
         <button 
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 transition-colors"
+          className="flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-500/20 active:scale-95"
         >
-          <Plus size={16} />
+          <Plus size={18} />
           New Workflow
         </button>
       </header>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        {[
+          { label: 'Total Workflows', value: stats.workflowCount, color: 'text-indigo-400' },
+          { label: 'Total Executions', value: stats.executionCount, color: 'text-emerald-400' },
+          { label: 'Success Rate', value: `${Math.round(stats.successRate)}%`, color: 'text-amber-400' },
+        ].map((stat, i) => (
+          <div key={i} className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 backdrop-blur-sm">
+            <p className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2">{stat.label}</p>
+            <p className={`text-4xl font-black ${stat.color}`}>{stat.value}</p>
+          </div>
+        ))}
+      </div>
       
-      <div className="grid gap-4">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between px-2 mb-2">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-500">Your Workflows</h2>
+        </div>
         {workflows.length > 0 ? (
           workflows.map(w => (
             <div 

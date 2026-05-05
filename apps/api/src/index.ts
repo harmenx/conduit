@@ -21,6 +21,20 @@ server.get('/workflows', async () => {
   })
 })
 
+server.get('/stats', async () => {
+  const [workflowCount, executionCount, successCount] = await Promise.all([
+    prisma.workflow.count(),
+    prisma.executionLog.count(),
+    prisma.executionLog.count({ where: { status: 'success' } })
+  ])
+  
+  return {
+    workflowCount,
+    executionCount,
+    successRate: executionCount > 0 ? (successCount / executionCount) * 100 : 0
+  }
+})
+
 server.post('/workflows', async (request, reply) => {
   const { name } = request.body as { name: string }
   const workflow = await prisma.workflow.create({

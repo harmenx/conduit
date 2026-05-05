@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useWorkflowStore } from '@/lib/store'
 import { NewWorkflowModal } from '@/components/NewWorkflowModal'
-import { Plus, ChevronRight, Trash2 } from 'lucide-react'
+import { Plus, ChevronRight, Trash2, Link as LinkIcon, Copy } from 'lucide-react'
 
 export default function Dashboard() {
   const { workflows, setWorkflows, updateWorkflow, removeWorkflow } = useWorkflowStore()
@@ -108,7 +108,22 @@ export default function Dashboard() {
                 </button>
                 <div>
                   <h3 className="font-medium text-zinc-200 group-hover:text-white transition-colors">{w.name}</h3>
-                  <p className="text-xs text-zinc-500">Last updated {new Date(w.updatedAt).toLocaleDateString()}</p>
+                  <div className="flex items-center gap-3 mt-0.5">
+                    <p className="text-xs text-zinc-500">Last updated {new Date(w.updatedAt).toLocaleDateString()}</p>
+                    {w.trigger?.type === 'webhook' && (
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          navigator.clipboard.writeText(`${window.location.origin}/hooks/${w.id}`)
+                          alert('Webhook URL copied!')
+                        }}
+                        className="flex items-center gap-1 text-[10px] text-indigo-400 hover:text-indigo-300 transition-colors bg-indigo-500/5 px-1.5 py-0.5 rounded border border-indigo-500/10"
+                      >
+                        <LinkIcon size={10} />
+                        Copy Webhook
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">

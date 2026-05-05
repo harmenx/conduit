@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsup src/index.ts"
+    "build": "tsup src/index.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "fastify": "^4.26.0",
@@ -17,9 +18,10 @@
     "@flowcore/shared": "workspace:*"
   },
   "devDependencies": {
-    "tsx": "^4.7.1",
+    "prisma": "^5.10.2",
     "tsup": "^8.0.2",
+    "tsx": "^4.7.1",
     "typescript": "^5.3.3",
-    "prisma": "^5.10.2"
+    "vitest": "^4.1.5"
   }
 }

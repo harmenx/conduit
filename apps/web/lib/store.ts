@@ -11,6 +11,7 @@ interface WorkflowState {
   updateWorkflow: (id: string, updates: Partial<Workflow>) => void
   removeWorkflow: (id: string) => void
   setCurrentWorkflow: (workflow: Workflow | null) => void
+  updateCurrentWorkflow: (updates: Partial<Workflow>) => void
   setSteps: (steps: Step[]) => void
   addStep: (step: Step) => void
   setSelectedStepId: (id: string | null) => void
@@ -35,6 +36,9 @@ export const useWorkflowStore = create<WorkflowState>((set) => ({
     workflows: state.workflows.filter(w => w.id !== id)
   })),
   setCurrentWorkflow: (workflow) => set({ currentWorkflow: workflow }),
+  updateCurrentWorkflow: (updates) => set((state) => ({
+    currentWorkflow: state.currentWorkflow ? { ...state.currentWorkflow, ...updates } : null
+  })),
   setSteps: (steps) => set({ steps }),
   addStep: (step) => set((state) => ({ 
     steps: [...state.steps, step].sort((a, b) => a.order - b.order) 

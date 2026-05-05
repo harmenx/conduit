@@ -1,5 +1,5 @@
 import Fastify from 'fastify'
-import { workflowQueue } from './lib/queue'
+import { workflowQueue, syncWorkflowSchedule } from './lib/queue'
 import prisma from './lib/prisma'
 import { engine } from './lib/engine'
 import { auth } from './lib/auth'
@@ -58,17 +58,18 @@ server.get('/workflows/:id', async (request, reply) => {
 
 server.put('/workflows/:id', async (request, reply) => {
   const { id } = request.params as { id: string }
-  const { name, enabled, steps } = request.body as { 
+  const { name, enabled, steps, trigger } = request.body as { 
     name?: string, 
     enabled?: boolean, 
-    steps: any[] 
+    steps: any[],
+    trigger?: any
   }
 
   return await prisma.$transaction(async (tx) => {
     // update workflow
     const workflow = await tx.workflow.update({
       where: { id },
-      data: { name, enabled }
+      data: { name, enabled, trigger }
     })
 
     // sync steps (delete and recreate for simplicity in this draft)
@@ -83,6 +84,9 @@ server.put('/workflows/:id', async (request, reply) => {
       }))
     })
 
+    return workflow
+  }).then(async (workflow) => {
+    await syncWorkflowSchedule(workflow)
     return workflow
   })
 })

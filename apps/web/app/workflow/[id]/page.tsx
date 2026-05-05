@@ -9,6 +9,7 @@ import { StepConfigPanel } from '@/components/StepConfigPanel'
 import { ExecutionLogs } from '@/components/ExecutionLogs'
 import { StepNode } from '@/components/StepNode'
 import { TestWorkflowModal } from '@/components/TestWorkflowModal'
+import { TriggerConfigModal } from '@/components/TriggerConfigModal'
 import { StepType } from '@flowcore/shared/types'
 
 export default function WorkflowEditor() {
@@ -24,13 +25,15 @@ export default function WorkflowEditor() {
     addStep, 
     setSelectedStepId, 
     selectedStepId,
-    moveStep 
+    moveStep,
+    updateCurrentWorkflow 
   } = useWorkflowStore()
   
   const [showAddStep, setShowAddStep] = useState(false)
   const [isPublishing, setIsPublishing] = useState(false)
   const [showLogs, setShowLogs] = useState(false)
   const [showTest, setShowTest] = useState(false)
+  const [showTriggerConfig, setShowTriggerConfig] = useState(false)
 
   useEffect(() => {
     async function fetchWorkflow() {
@@ -69,7 +72,8 @@ export default function WorkflowEditor() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           enabled: true, 
-          steps: steps 
+          steps: steps,
+          trigger: currentWorkflow?.trigger
         }),
       })
       if (res.ok) alert('Workflow published!')
@@ -133,14 +137,21 @@ export default function WorkflowEditor() {
         <div className="relative flex-1 overflow-auto bg-[radial-gradient(#18181b_1px,transparent_1px)] [background-size:24px_24px]">
           <div className="mx-auto flex w-max flex-col items-center gap-8 py-20">
             {/* trigger node */}
-            <div className="group relative flex h-20 w-64 items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900 p-4 shadow-lg hover:border-zinc-700 transition-colors cursor-pointer">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400">
-                <Zap size={18} />
+            <div 
+              onClick={() => setShowTriggerConfig(true)}
+              className="group relative flex h-20 w-64 items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900 p-4 shadow-lg hover:border-indigo-500/50 hover:bg-zinc-800/50 transition-all cursor-pointer"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-colors">
+                {currentWorkflow?.trigger?.type === 'schedule' ? <Clock size={18} /> : <Zap size={18} />}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] font-bold uppercase text-indigo-400">Trigger</p>
-                <p className="text-sm font-medium text-zinc-200 truncate">Webhook Listener</p>
-                <p className="text-[10px] font-mono text-zinc-500 truncate mt-0.5">/hooks/{id}</p>
+                <p className="text-sm font-medium text-zinc-200 truncate">
+                  {currentWorkflow?.trigger?.type === 'schedule' ? 'Cron Schedule' : 'Webhook Listener'}
+                </p>
+                <p className="text-[10px] font-mono text-zinc-500 truncate mt-0.5">
+                  {currentWorkflow?.trigger?.type === 'schedule' ? currentWorkflow.trigger.cron : `/hooks/${id}`}
+                </p>
               </div>
             </div>
 
@@ -185,6 +196,17 @@ export default function WorkflowEditor() {
         <TestWorkflowModal 
           workflowId={id} 
           onClose={() => setShowTest(false)} 
+        />
+      )}
+
+      {showTriggerConfig && (
+        <TriggerConfigModal
+          trigger={currentWorkflow?.trigger}
+          onClose={() => setShowTriggerConfig(false)}
+          onSave={(trigger) => {
+            updateCurrentWorkflow({ trigger })
+            setShowTriggerConfig(false)
+          }}
         />
       )}
     </div>

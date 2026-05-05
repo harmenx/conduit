@@ -26,7 +26,7 @@ export class WorkflowEngine {
       const stepResults: any[] = []
 
       for (const step of workflow.steps) {
-        const result = await this.executeStep(step, currentData)
+        const result = await this.executeStep(step, currentData, stepResults)
         stepResults.push({ 
           stepId: step.id, 
           type: step.type,
@@ -50,6 +50,7 @@ export class WorkflowEngine {
       })
 
     } catch (err: any) {
+      console.error('Workflow execution failed:', err)
       await prisma.executionLog.update({
         where: { id: log.id },
         data: {
@@ -61,18 +62,51 @@ export class WorkflowEngine {
     }
   }
 
-  private async executeStep(step: any, input: any) {
-    const config = step.config as any
+  private resolveTemplate(template: string, context: { input: any, steps: any[] }) {
+    if (!template) return template
     
+    return template.replace(/{{(.*?)}}/g, (match, path) => {
+      const trimmedPath = path.trim()
+      
+      // Handle {{input}}
+      if (trimmedPath === 'input') return typeof context.input === 'object' ? JSON.stringify(context.input) : context.input
+      
+      // Handle {{steps.0.output.field}}
+      if (trimmedPath.startsWith('steps.')) {
+        const parts = trimmedPath.split('.')
+        const stepIndex = parseInt(parts[1])
+        const stepResult = context.steps[stepIndex]
+        
+        if (!stepResult) return match
+        
+        const remainingPath = parts.slice(2).join('.')
+        if (!remainingPath) return typeof stepResult.output === 'object' ? JSON.stringify(stepResult.output) : stepResult.output
+        
+        const getValue = (obj: any, path: string) => {
+          return path.split('.').reduce((o, i) => (o ? o[i] : undefined), obj)
+        }
+        
+        const value = getValue(stepResult.output, remainingPath)
+        return value !== undefined ? (typeof value === 'object' ? JSON.stringify(value) : value) : match
+      }
+      
+      return match
+    })
+  }
+
+  private async executeStep(step: any, input: any, previousSteps: any[]) {
+    const config = step.config as any
+    const context = { input, steps: previousSteps }
     switch (step.type) {
       case 'log':
         console.log(`[Step ${step.id}]`, input)
         return input
 
       case 'llm': {
+        const prompt = this.resolveTemplate(config.prompt, context)
         const { text } = await generateText({
           model: openai('gpt-4-turbo'),
-          prompt: config.prompt.replace(/{{input}}/g, JSON.stringify(input)),
+          prompt,
         })
         return { ...input, ai_result: text }
       }
@@ -107,8 +141,10 @@ export class WorkflowEngine {
 
       case 'webhook': {
         const { url, method = 'POST' } = config
-        console.log(`Making ${method} request to ${url}...`)
-        const response = await fetch(url, {
+        const resolvedUrl = this.resolveTemplate(url, context)
+        
+        console.log(`Making ${method} request to ${resolvedUrl}...`)
+        const response = await fetch(resolvedUrl, {
           method,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(input)

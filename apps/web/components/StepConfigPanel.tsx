@@ -31,9 +31,13 @@ export function StepConfigPanel() {
               className="h-48 w-full rounded-md border border-zinc-800 bg-zinc-950 p-3 text-sm text-zinc-300 focus:border-indigo-500 focus:outline-none transition-colors"
               placeholder="Enter instructions for the AI..."
             />
-            <p className="mt-2 text-[10px] text-zinc-500 italic">
-              Use {"{{input}}"} to reference data from the previous step.
-            </p>
+            <div className="mt-3 space-y-2">
+              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Available Variables</p>
+              <div className="grid grid-cols-1 gap-1">
+                <code className="text-[10px] text-indigo-400 bg-indigo-500/5 px-2 py-1 rounded border border-indigo-500/10">{"{{input}}"} - Result from previous step</code>
+                <code className="text-[10px] text-emerald-400 bg-emerald-500/5 px-2 py-1 rounded border border-emerald-500/10">{"{{steps.0.output}}"} - Result from step 1</code>
+              </div>
+            </div>
           </div>
         )}
 
@@ -102,6 +106,10 @@ export function StepConfigPanel() {
                 className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-300 focus:border-indigo-500 focus:outline-none"
                 placeholder="https://api.example.com/endpoint"
               />
+              <div className="mt-2 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                <code className="text-[9px] text-indigo-400 bg-indigo-500/5 px-2 py-1 rounded border border-indigo-500/10 shrink-0">{"{{input}}"}</code>
+                <code className="text-[9px] text-emerald-400 bg-emerald-500/5 px-2 py-1 rounded border border-emerald-500/10 shrink-0">{"{{steps.0.output}}"}</code>
+              </div>
             </div>
             <div>
               <label className="mb-2 block text-xs font-medium text-zinc-500 uppercase tracking-wider">Method</label>

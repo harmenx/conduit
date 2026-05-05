@@ -31,7 +31,7 @@ export function LogDetailsModal({ log, onClose }: LogDetailsModalProps) {
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
               <div className="flex items-center gap-2 mb-2 text-zinc-400">
                 <Code size={14} />
@@ -42,11 +42,35 @@ export function LogDetailsModal({ log, onClose }: LogDetailsModalProps) {
               </pre>
             </div>
 
+            {log.trace?.steps && (
+              <div>
+                <div className="flex items-center gap-2 mb-4 text-zinc-400">
+                  <span className="text-xs font-bold uppercase tracking-widest">Execution Trace</span>
+                </div>
+                <div className="space-y-3">
+                  {log.trace.steps.map((step: any, i: number) => (
+                    <div key={i} className="rounded-lg border border-zinc-800 bg-zinc-950/50 overflow-hidden">
+                      <div className="flex items-center justify-between bg-zinc-900/50 px-4 py-2 border-b border-zinc-800">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold text-zinc-500 uppercase">{step.type}</span>
+                          <span className="text-xs font-mono text-zinc-300">{step.stepId}</span>
+                        </div>
+                        <span className="text-[10px] text-zinc-500">{new Date(step.timestamp).toLocaleTimeString()}</span>
+                      </div>
+                      <pre className="p-3 text-[10px] font-mono text-zinc-400 overflow-auto max-h-32">
+                        {JSON.stringify(step.output, null, 2)}
+                      </pre>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {log.status === 'success' && (
               <div>
                 <div className="flex items-center gap-2 mb-2 text-emerald-400">
                   <Code size={14} />
-                  <span className="text-xs font-bold uppercase tracking-widest">Output Data</span>
+                  <span className="text-xs font-bold uppercase tracking-widest">Final Output</span>
                 </div>
                 <pre className="rounded-lg bg-zinc-950 p-4 text-[11px] font-mono text-emerald-200 overflow-auto border border-emerald-500/10">
                   {JSON.stringify(log.trace?.output || {}, null, 2)}

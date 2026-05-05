@@ -23,9 +23,17 @@ export class WorkflowEngine {
       if (!workflow) throw new Error('Workflow not found')
 
       let currentData = payload
+      const stepResults: any[] = []
 
       for (const step of workflow.steps) {
-        currentData = await this.executeStep(step, currentData)
+        const result = await this.executeStep(step, currentData)
+        stepResults.push({ 
+          stepId: step.id, 
+          type: step.type,
+          output: result,
+          timestamp: new Date()
+        })
+        currentData = result
       }
 
       await prisma.executionLog.update({
@@ -33,7 +41,11 @@ export class WorkflowEngine {
         data: {
           status: 'success',
           finishedAt: new Date(),
-          trace: { ...log.trace as object, output: currentData }
+          trace: { 
+            input: payload, 
+            output: currentData,
+            steps: stepResults 
+          }
         }
       })
 
